@@ -20,7 +20,6 @@ A short demo of BananaBath in action is available in the `demo/` folder:
 [Watch Demo](demo/BananaBath-Demo.mp4)
 
 ## Notes
-- The project was completed as a 24-hour hackathon challenge at CornHacks 2025.  
-- Dataset used is clean and manually curated.  
+- The project was completed as a 24-hour hackathon challenge at CornHacks 2025.   
 - Collaboration with teammate: Khushi Singh.
 
