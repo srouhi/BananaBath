@@ -1,7 +1,7 @@
 # BananaBath – Interior Design Assistant  
 *Hackathon Project – CornHacks 2025*
 
-BananaBath is a full-stack interior design assistant specialized in bathroom design, developed during a 24-hour hackathon in collaboration with Khushi Singh. The project combines a responsive frontend with an intelligent backend to provide design suggestions, color analysis, and image retrieval based on user input.
+BananaBath is a full-stack interior design assistant specialized in bathroom design, developed during a 24-hour hackathon. The project combines a responsive frontend with an intelligent backend to provide design suggestions, color analysis, and image retrieval based on user input.
 
 ## Features
 - **Chatbot Assistant:** Uses Gemini API and prompt engineering to provide cost analysis, color matching, and design recommendations.  
