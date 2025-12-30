@@ -1,0 +1,23 @@
+# Ignore data folders
+data/
+datasets/
+raw_data/
+processed_data/
+
+# Ignore large data files anywhere
+*.csv
+*.jsonl
+*.parquet
+*.h5
+*.pkl
+*.npy
+*.zip
+
+# Python junk
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment files
+.env
+venv/

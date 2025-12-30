@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BananaBath - Bathroom Interior Designer</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom font import for aesthetics */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+        html {
+            scroll-behavior: smooth;
+        }
+        section {
+            scroll-margin-top: 80px; /* adjust to match navbar height */
+        }        
+
+        :root {
+            /* Custom Colors for theme: Light Purple and Yellow */
+            --primary-purple: #e7d8f7; /* Tailwind: purple-200 (Very Light Background) */
+            --accent-yellow: #f7e37c; /* Tailwind: yellow-400 */
+            --dark-purple: #3d226a; /* Tailwind: purple-700 */
+            --bright-purple: #A855F7; /* New: Vibrant purple for chat header/button */
+        }
+        
+        /*body {
+            font-family: 'Inter', sans-serif;
+            background-color: #d5c4e9; /* Very light background */
+        /*}*/
+        body {
+            font-family: 'Baloo 2', cursive;
+            background: #fdf3ff;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        .hero-title {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        /* --- Bubble Effect Styles --- */
+        #bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Crucial: ensures mouse clicks go through the bubbles to the elements below */
+            z-index: -1; /* Keep it behind all content */
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3; 
+            transition: all 1.5s ease-out; 
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), inset 0 0 5px rgba(255, 255, 255, 0.9); 
+            border: 1px solid rgba(255, 255, 255, 0.7); 
+            will-change: transform, opacity;
+            filter: saturate(1.5); 
+        }
+
+        .bubble-yellow {
+            background-color: rgba(253, 224, 71, 0.15); 
+            border-color: rgba(253, 224, 71, 0.8); 
+        }
+
+        .bubble-purple {
+            background-color: rgba(233, 213, 255, 0.15); 
+            border-color: rgba(233, 213, 255, 0.8); 
+        }
+
+        /* --- Chat Widget Styles --- */
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 60px;
+            height: 60px;
+            /* Updated to bright purple */
+            background-color: var(--bright-purple);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        #chat-button:hover {
+            transform: scale(1.05);
+            background-color: #8B5CF6; /* slightly darker bright purple */
+        }
+
+        #chat-modal {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 999;
+            width: 100%;
+            max-width: 350px;
+            height: 450px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #chat-modal.open {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            /* Updated to light primary purple */
+            background-color: var(--primary-purple); 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            display: none; 
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #fff; /* White background for user to stand out against light purple chat background */
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .banana-message {
+            background-color: var(--accent-yellow);
+            margin-right: auto;
+            text-align: left;
+            border-bottom-left-radius: 4px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+
+
+
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- 1. Floating Bubble Container (Behind all content) -->
+    <div id="bubble-container"></div>
+
+    <!-- Navigation Bar -->
+    <nav id="navbar" class="sticky top-0 z-30 bg-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+            
+            <!-- Logo/Brand Name: Replaced with image -->
+            <div class="flex items-center">
+            <img src="img/logo.jpeg" alt="BananaBath Official Mascot Logo" class="h-12 w-auto rounded-full shadow-md">
+            <div class="text-xl font-bold text-purple-700 rounded-lg p-1" style="background-color: var(--accent-yellow); margin-left: 0;">
+                Banana<span class="text-gray-800">Bath</span>
+            </div>
+            </div>
+
+            <!-- Tabs/Links -->
+            <div class="flex space-x-2 sm:space-x-4">
+                <a href="#home" class="py-2 px-3 text-sm font-medium text-gray-700 hover:bg-purple-200 hover:text-purple-800 rounded-lg transition duration-150">Home</a>
+                <a href="#quiz" class="py-2 px-3 text-sm font-medium text-gray-700 hover:bg-purple-200 hover:text-purple-800 rounded-lg transition duration-150">Style Discoverer</a>
+                <a href="#portfolio" class="py-2 px-3 text-sm font-medium text-gray-700 hover:bg-purple-200 hover:text-purple-800 rounded-lg transition duration-150">Portfolio</a>
+                <a href="#contact" class="py-2 px-3 text-sm font-medium text-gray-700 hover:bg-purple-200 hover:text-purple-800 rounded-lg transition duration-150">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+        <!-- Hero Section -->
+        <section id="home" class="text-center p-8 md:p-16 rounded-3xl shadow-2xl relative overflow-hidden" style="background-color: var(--primary-purple);">
+            
+            <!-- Background Accent Shape -->
+            <div class="absolute inset-0 opacity-20 transform -rotate-12 scale-150" style="background-color: var(--accent-yellow); border-radius: 50%;"></div>
+
+            <div class="relative z-10">
+                <!-- Icon replaced with a simple geometric shape since the logo is now the mascot -->
+                <div class="w-16 h-16 md:w-20 md:h-20 mx-auto text-purple-800 mb-4 rounded-full flex items-center justify-center shadow-lg" style="background-color: var(--accent-yellow);">
+                    <img src="img/logo.jpeg" alt="BananaBath Official Mascot Logo" class="h-16 w-auto md:h-18 rounded-full shadow-md">
+                </div>
+
+                
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold hero-title mb-4 text-purple-900">
+                    Hey, I'm <b> BananaBath ! </b>
+                </h2>
+                
+                <p class="text-xl md:text-2xl font-light mb-8 text-purple-800">
+                    your personal Bathroom Interior designer specializing in comfort, efficiency, and vibrant aesthetics.
+                </p>
+
+                <div class="flex flex-col gap-4 items-center mt-6">
+                    <a href="#quiz" class="inline-block py-2 px-6 text-base font-bold text-gray-800 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105" style="background-color: var(--accent-yellow);">
+                        Not sure what you're looking for?
+                    </a>
+                    <a href="#contact" class="inline-block py-2 px-6 text-base font-bold text-gray-800 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105" style="background-color: var(--accent-yellow);">
+                        Already know the features?
+                    </a>
+                </div>
+
+
+            </div>
+        </section>
+        <!-- Quiz Section -->
+        <section id="quiz" class="mt-20 p-8 bg-white rounded-xl shadow-lg">
+            <h3 class="text-3xl font-bold text-center mb-10 text-purple-700">Find Your Bathroom Style!</h3>
+            
+            <div id="quiz-container" class="text-center">
+                <!-- Step 1 -->
+                <div class="quiz-step" data-step="1">
+                    <p class="text-xl mb-4 font-semibold text-purple-800">Question 1: Choose a vibe:</p>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <button class="quiz-btn relative group">
+                            <img src="img/boho/boho1.jpg" alt="boho Style 1" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">A</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/industrial/industrial1.jpeg" alt="industrial Style 1" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">B</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/minimalist/minimalist1.jpeg" alt="minimalist Style 1" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">C</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/modern/modern1.jpeg" alt="Modern Style 1" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">D</spDn>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/scandanavian/scandanavian1.jpeg" alt="scandanavian Style 1" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">E</span>
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="quiz-step hidden" data-step="2">
+                    <p class="text-xl mb-4 font-semibold text-purple-800">Question 2: Choose a color scheme:</p>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <button class="quiz-btn relative group">
+                            <img src="img/boho/boho2.jpg" alt="boho Style 2" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">A</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/industrial/industrial2.jpeg" alt="industrial Style 2" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">B</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/minimalist/minimalist2.jpeg" alt="minimalist Style 2" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">C</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/modern/modern2.jpeg" alt="Modern Style 2" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">D</spDn>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/scandanavian/scandanavian2.jpeg" alt="scandanavian Style 2" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">E</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="quiz-step hidden" data-step="2">
+                    <p class="text-xl mb-4 font-semibold text-purple-800">Question 2: Choose a color scheme:</p>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <button class="quiz-btn relative group">
+                            <img src="img/boho/boho3.jpg" alt="boho Style 3" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">A</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/industrial/industrial3.jpeg" alt="industrial Style 3" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">B</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/minimalist/minimalist3.jpeg" alt="minimalist Style 3" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">C</span>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/modern/modern3.jpeg" alt="Modern Style 3" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">D</spDn>
+                        </button>
+                        <button class="quiz-btn relative group">
+                            <img src="img/scandanavian/scandanavian3.jpeg" alt="scandanavian Style 3" class="w-32 h-32 object-cover rounded-lg shadow-md transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white font-bold bg-purple-700 bg-opacity-70 px-2 py-1 rounded">E</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div id="quiz-result" class="hidden mt-6">
+                    <p class="text-xl font-semibold text-purple-800">Your ideal style is: <span id="result-text" class="text-yellow-500"></span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section id="search" class="mt-20 p-8 bg-white rounded-xl shadow-lg text-center">
+            <h3 class="text-3xl font-bold mb-6 text-purple-700">
+                Already know what you're looking for?
+            </h3>
+            <p class="text-lg mb-6 text-purple-800">
+                Search for key words to see some sample designs.
+            </p>
+            <div class="flex justify-center">
+                <form id="search-form" onsubmit="handleSearch(event)">
+                    <input type="text" id="search-input" placeholder="Search styles..." class="..." />
+                    <button type="submit" class="...">Search</button>
+                </form>
+            </div>
+            <!-- Single results container -->
+            <div id="search-results" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+
+        <!-- Contact Section (Placeholder) -->
+        <section id="contact" class="mt-20 p-8 bg-white rounded-xl shadow-lg">
+            <h3 class="text-3xl font-bold text-center mb-6 text-purple-700">Ready to Dive In?</h3>
+            <div class="max-w-md mx-auto">
+                <form class="space-y-4">
+                    <input type="text" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:border-yellow-400">
+                    <input type="email" placeholder="Your Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:border-yellow-400">
+                    <textarea placeholder="Tell us about your dream bathroom!" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-400 focus:border-yellow-400"></textarea>
+                    <button type="submit" class="w-full py-3 font-bold text-gray-800 rounded-lg shadow-md transition duration-200 hover:opacity-90" style="background-color: var(--accent-yellow);">
+                        Send Inquiry
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-6 mt-12">
+        <div class="max-w-6xl mx-auto text-center text-sm">
+            &copy; 2025 BananaBath. Designed for bubbly spirits.
+        </div>
+    </footer>
+
+    <!-- 3. Chat Button and Modal -->
+    
+    <!-- Floating Chat Button -->
+    <div id="chat-button" aria-label="Open Chatbot">
+        <!-- SVG for a chat bubble icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+
+    <!-- Chat Modal Window -->
+    <div id="chat-modal" class="hidden">
+        <!-- Header -->
+        <div class="p-3 text-white flex justify-between items-center rounded-t-lg" style="background-color: var(--bright-purple);">
+            <div class="flex items-center space-x-2">
+                <!-- Chatbot Logo -->
+                <img src="img/logo.jpeg" alt="BananaBath Chatbot Logo" class="h-8 w-8 rounded-full shadow">
+                <h4 class="font-bold text-sm">Chat with BananaBath</h4>
+            </div>
+            <button id="chat-close-btn" class="text-white hover:text-yellow-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages">
+            <!-- Initial BananaBath welcome message -->
+            <div class="chat-message banana-message text-sm text-gray-800">
+                Hey there! I'm BananaBath, your bubbly designer. I can help you brainstorm colors and styles for your dream bathroom! What can I help you splash into?
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-3 border-t border-gray-200">
+            <form id="chat-form" class="flex">
+                <input
+                    type="text"
+                    id="chat-input"
+                    placeholder="Ask about design..."
+                    class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-purple-400 focus:border-purple-400 text-sm"
+                    autocomplete="off"
+                >
+                <button 
+                    type="submit" 
+                    class="text-white p-2 rounded-r-lg transition duration-150"
+                    style="background-color: var(--bright-purple);"
+                    aria-label="Send Message"
+                    id="chat-send-btn"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 15 2 11 22 2"></polygon></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- 2. JavaScript for Mouse Trail Effect and Gemini Chatbot Logic -->
+    <script>
+        // --- Bubble Effect Logic (Unchanged) ---
+        const container = document.getElementById('bubble-container');
+        let lastBubbleTime = 0;
+        const creationInterval = 50; 
+        
+        const createBubble = (x, y) => {
+            const now = Date.now();
+            if (now - lastBubbleTime < creationInterval) return;
+            lastBubbleTime = now;
+
+            const bubble = document.createElement('div');
+            const isYellow = Math.random() < 0.5;
+            const size = Math.random() * 30 + 15; 
+            const duration = Math.random() * 3 + 2; 
+
+            bubble.className = 'bubble ' + (isYellow ? 'bubble-yellow' : 'bubble-purple');
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            bubble.style.transitionDuration = `${duration}s`;
+            
+            const offsetX = (Math.random() - 0.5) * 10;
+            const offsetY = (Math.random() - 0.5) * 10;
+
+            bubble.style.left = `${x - size / 2 + offsetX}px`;
+            bubble.style.top = `${y - size / 2 + offsetY}px`;
+            bubble.style.opacity = 1;
+            
+            container.appendChild(bubble);
+
+            setTimeout(() => {
+                bubble.style.opacity = 0;
+                bubble.style.transform = `translateY(-${Math.random() * 150 + 50}px)`; 
+            }, 50);
+
+            setTimeout(() => {
+                if (bubble.parentElement) {
+                    container.removeChild(bubble);
+                }
+            }, duration * 1000); 
+        };
+
+        window.addEventListener('mousemove', (e) => {
+            createBubble(e.clientX, e.clientY);
+        });
+        
+        // --- Gemini Chatbot Logic (NEW) ---
+        const chatButton = document.getElementById('chat-button');
+        const chatModal = document.getElementById('chat-modal');
+        const chatCloseBtn = document.getElementById('chat-close-btn');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        
+        // Toggle chat visibility
+        const toggleChat = () => {
+            chatModal.classList.toggle('open');
+            chatSendBtn.disabled = false; // Enable button on open
+            if (chatModal.classList.contains('open')) {
+                chatModal.style.visibility = 'visible'; 
+                chatInput.focus();
+            } else {
+                setTimeout(() => {
+                    chatModal.style.visibility = 'hidden';
+                }, 300);
+            }
+        };
+
+        chatButton.addEventListener('click', toggleChat);
+        chatCloseBtn.addEventListener('click', toggleChat);
+
+        // Function to append a message to the chat window
+        const appendMessage = (text, sender) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message text-sm text-gray-800 ${sender === 'user' ? 'user-message' : 'banana-message'}`;
+            messageDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Basic markdown formatting
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
+        // Function to send message to the Gemini API with exponential backoff
+        const sendMessageToGemini = async (userMessage) => {
+            const response = await fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: userMessage }),
+            });
+            const result = await response.json();
+            return result.reply;
+        };
+
+
+
+        // Handle form submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = chatInput.value.trim();
+            if (userMessage === '') return;
+            
+            chatSendBtn.disabled = true; // Disable button while loading
+            const originalButtonText = chatSendBtn.innerHTML;
+
+            // 1. Display user message and clear input
+            appendMessage(userMessage, 'user');
+            chatInput.value = '';
+
+            // 2. Add typing indicator (styled to look like a message bubble)
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message banana-message text-sm text-gray-800 italic';
+            typingIndicator.innerHTML = 'BananaBath is typing...';
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 3. Get API response
+            const botResponse = await sendMessageToGemini(userMessage);
+
+            // 4. Remove indicator and display response
+            if (typingIndicator.parentElement) {
+                chatMessages.removeChild(typingIndicator);
+            }
+            appendMessage(botResponse, 'banana');
+            
+            chatSendBtn.disabled = false; // Re-enable button
+            chatSendBtn.innerHTML = originalButtonText;
+            chatInput.focus();
+        });
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const steps = document.querySelectorAll(".quiz-step");
+        const resultDiv = document.getElementById("quiz-result");
+        const resultText = document.getElementById("result-text");
+
+        let answers = [];
+
+        // Map letter labels (A–E) to styles
+        const styleMap = {
+            "A": "Boho",
+            "B": "Industrial",
+            "C": "Minimalist",
+            "D": "Modern",
+            "E": "Scandinavian"
+        };
+
+        steps.forEach(step => {
+            const buttons = step.querySelectorAll(".quiz-btn");
+            buttons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    // Get the label inside the button (A, B, C, etc.)
+                    const label = btn.querySelector("span").textContent.trim();
+                    const style = styleMap[label];
+                    answers.push(style);
+
+                    // Hide current step
+                    step.classList.add("hidden");
+
+                    // Show next step
+                    const nextStep = step.nextElementSibling;
+                    if (nextStep && nextStep.classList.contains("quiz-step")) {
+                        nextStep.classList.remove("hidden");
+                    } else {
+                        // Calculate the most frequent style
+                        const counts = answers.reduce((acc, style) => {
+                            acc[style] = (acc[style] || 0) + 1;
+                            return acc;
+                        }, {});
+
+                        let topStyle = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
+                        // Optional fun summaries
+                        const descriptions = {
+                            "Boho": "warm, artistic, and full of natural textures",
+                            "Industrial": "edgy, bold, and full of character",
+                            "Minimalist": "clean, balanced, and calming",
+                            "Modern": "sleek, elegant, and effortlessly cool",
+                            "Scandinavian": "bright, cozy, and refreshingly simple"
+                        };
+
+                        // Update result section
+                        resultText.innerHTML = `${topStyle} —> ${descriptions[topStyle]}`;
+                        resultDiv.classList.remove("hidden");
+                    }
+                });
+            });
+        });
+    });
+
+
+    async function handleSearch(event) {
+        event.preventDefault();
+        const query = document.getElementById("search-input").value;
+        if (!query.trim()) return;
+
+        const resultsContainer = document.getElementById("search-results");
+        resultsContainer.innerHTML = "<p>Searching...</p>";
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/api/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query })
+            });
+
+            const results = await response.json();
+
+            if (!Array.isArray(results) || results.length === 0) {
+                resultsContainer.innerHTML = "<p>No results found.</p>";
+                return;
+            }
+
+            resultsContainer.innerHTML = results.map(r => `
+                <div class="bg-purple-100 hover:bg-purple-200 transition-all rounded-2xl shadow-md p-4 flex flex-col items-center text-center">
+                    ${r.file_url ? `<img src="http://127.0.0.1:5000${r.file_url}" alt="${r.title}" class="w-full h-48 object-cover rounded-xl mb-3">` : ""}
+                    <h3 class="text-lg font-semibold text-purple-700 mb-1">${r.title || "Untitled"}</h3>
+                    <p class="text-sm text-gray-700 mb-1"><strong>Style:</strong> ${r.style || "Unknown"}</p>
+                    <p class="text-xs text-gray-500"><strong>Score:</strong> ${r.score?.toFixed(3)}</p>
+                </div>
+            `).join("");
+
+        } catch (err) {
+            console.error(err);
+            resultsContainer.innerHTML = "<p>Error fetching results.</p>";
+        }
+    }
+
+    </script>
+    
+
+ 
+
+</body>
+</html>
